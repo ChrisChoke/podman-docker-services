@@ -1,0 +1,22 @@
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/.env
+
+[Container]
+Image=lscr.io/linuxserver/heimdall:latest
+ContainerName=heimdall
+Network=frontend.network
+Volume=./config:/config
+
+#Environment=PUID=1000
+#Environment=PGID=1000
+Environment=TZ=Europe/Amsterdam
+
+Label="traefik.enable=true"
+Label="traefik.http.routers.heimdall.entrypoints=websecure" # reference from traefik.yml static config
+Label="traefik.http.routers.heimdall.rule=Host(`heimdall.${BASEDOMAIN}`)"
+Label="traefik.http.routers.heimdall.tls=true"
+Label="traefik.http.services.heimdall.loadbalancer.server.port=80"
+
+[Install]
+# Start by default on boot
+WantedBy=default.target

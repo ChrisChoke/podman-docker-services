@@ -1,0 +1,20 @@
+services:
+  uptimekuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptimekuma
+    restart: unless-stopped
+    networks:
+      - frontend
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data:/app/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptimekuma.entrypoints=https"
+      - "traefik.http.routers.uptimekuma.rule=Host(`ukuma.${BASEDOMAIN}`)"
+      - "traefik.http.routers.uptimekuma.tls=true"
+      - "traefik.http.services.uptimekuma.loadbalancer.server.port=3001"
+
+networks:
+  frontend:
+    external: true

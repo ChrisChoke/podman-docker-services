@@ -1,0 +1,22 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    networks:
+      - frontend
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data:/data/
+    #ports:
+    #  - 8080:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vaultwarden.entrypoints=https"
+      - "traefik.http.routers.vaultwarden.rule=Host(`vault.${BASEDOMAIN}`)"
+      - "traefik.http.routers.vaultwarden.tls=true"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80" # need to be http port. or add some middleware redirects
+
+networks:
+  frontend:
+    external: true

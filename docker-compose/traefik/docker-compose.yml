@@ -1,0 +1,44 @@
+
+services:
+  traefik:
+    image: traefik:3.6.2
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 80:80
+      - 443:443
+      - 7359:7359/udp # jellyfing discovery
+    environment:
+      - CF_DNS_API_TOKEN
+      - CF_EMAIL
+      - BASEDOMAIN
+    networks:
+      - frontend
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/traefik.yml:ro
+      # - acme.json:/acme.json
+      # - config.yml:/config.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=http" # reference from traefik.yml static config
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${BASEDOMAIN}`)"
+     # - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:hashed_passwd"
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.traefik-secure.entrypoints=https" # reference from traefik.yml static config
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${BASEDOMAIN}`)"
+     # - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare" # reference from traefik.yml static config
+      # - "traefik.http.routers.traefik-secure.tls.domains[0].main=${BASEDOMAIN}"
+      # - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.${BASEDOMAIN}"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+
+networks:
+  frontend:
+    external: true

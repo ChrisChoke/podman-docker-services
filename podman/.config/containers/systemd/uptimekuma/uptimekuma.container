@@ -1,0 +1,21 @@
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/.env
+
+[Container]
+Image=docker.io/louislam/uptime-kuma:2
+ContainerName=uptimekuma
+Network=frontend.network
+Volume=/etc/localtime:/etc/localtime:ro
+Volume=./data:/app/data
+
+AddCapability=NET_RAW
+
+Label="traefik.enable=true"
+Label="traefik.http.routers.uptimekuma.entrypoints=websecure"
+Label="traefik.http.routers.uptimekuma.rule=Host(`ukuma.${BASEDOMAIN}`)"
+Label="traefik.http.routers.uptimekuma.tls=true"
+Label="traefik.http.services.uptimekuma.loadbalancer.server.port=3001"
+
+[Install]
+# Start by default on boot
+WantedBy=default.target

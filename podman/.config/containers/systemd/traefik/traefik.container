@@ -1,0 +1,35 @@
+[Unit]
+After=http.socket https.socket
+Requires=http.socket https.socket
+
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/.env
+Sockets=http.socket https.socket
+
+[Container]
+Image=docker.io/library/traefik
+ContainerName=traefik
+Notify=true
+Network=frontend.network
+# jellyfin discovery
+PublishPort=7359:7359/udp
+Volume=%t/podman/podman.sock:/var/run/docker.sock:ro
+Volume=/etc/localtime:/etc/localtime:ro
+Volume=./traefik.yml:/traefik.yml:ro
+# Volume=./config.yml:/config.yml:ro # file provider settings
+SecurityLabelDisable=true
+
+Label="traefik.enable=true"
+Label="traefik.http.routers.traefik.entrypoints=web" # reference from traefik.yml static config
+Label="traefik.http.routers.traefik.rule=Host(`traefik.${BASEDOMAIN}`)"
+Label="traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+Label="traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+Label="traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+Label="traefik.http.routers.traefik-secure.entrypoints=websecure" # reference from traefik.yml static config
+Label="traefik.http.routers.traefik-secure.rule=Host(`traefik.${BASEDOMAIN}`)"
+Label="traefik.http.routers.traefik-secure.tls=true"
+Label="traefik.http.routers.traefik-secure.service=api@internal"
+
+[Install]
+# Start by default on boot
+WantedBy=default.target

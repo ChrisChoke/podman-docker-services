@@ -1,0 +1,26 @@
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/.env
+
+[Container]
+Image=docker.io/vaultwarden/server:latest
+ContainerName=vaultwarden
+Network=frontend.network
+Volume=/etc/localtime:/etc/localtime:ro
+Volume=./data:/data/
+
+UserNS=keep-id
+
+EnvironmentFile=./.env
+Environment=ROCKET_PORT=8001
+Environment=DOMAIN="https://vault.${BASEDOMAIN}"
+Environment=SIGNUPS_ALLOWED=false
+
+Label="traefik.enable=true"
+Label="traefik.http.routers.vaultwarden.entrypoints=websecure"
+Label="traefik.http.routers.vaultwarden.rule=Host(`vault.${BASEDOMAIN}`)"
+Label="traefik.http.routers.vaultwarden.tls=true"
+Label="traefik.http.services.vaultwarden.loadbalancer.server.port=8001"
+
+[Install]
+# Start by default on boot
+WantedBy=default.target

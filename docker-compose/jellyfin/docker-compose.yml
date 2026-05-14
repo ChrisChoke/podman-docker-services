@@ -1,0 +1,39 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ= Europe/Amsterdam
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.${BASEDOMAIN}
+    networks:
+      - frontend
+    volumes:
+      - ./config:/config
+      - ./cache:/cache
+      - type: bind
+        source: /mnt/plex_media
+        target: /media
+    #ports:
+      # - 8096:8096 http webui
+      #- 7359:7359/udp #optional Allows clients to discover Jellyfin on the local network
+      #- 1900:1900/udp #optional Service discovery used by DNLA and clients
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.entrypoints=https"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.${BASEDOMAIN}`)"
+      - "traefik.http.routers.jellyfin.tls=true"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      # udp routing
+      - "traefik.udp.routers.jellyfin-discovery.entrypoints=udp-jf" # reference from traefik.yml static config
+      - "traefik.udp.services.jellyfin-discovery.loadbalancer.server.port=7359"
+    
+
+networks:
+  frontend:
+    external: true
+
+# note: in jellyfin known_proxy setting in the webui you need to enter the service name of the traefik container.
+# this is a valid hostname within the docker network. so jellyfin can read the X-Forwarded-* Headers.

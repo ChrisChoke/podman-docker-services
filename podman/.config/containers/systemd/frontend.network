@@ -1,0 +1,3 @@
+[Network]
+Options=isolate=true
+Internal=true # need to be false if the container need downloading files from the internet

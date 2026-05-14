@@ -1,0 +1,26 @@
+services:
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
+    restart: unless-stopped
+    networks:
+      - frontend
+    volumes:
+      - ./config:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Amsterdam
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.heimdall.entrypoints=https"
+      - "traefik.http.routers.heimdall.rule=Host(`heimdall.${BASEDOMAIN}`)"
+      - "traefik.http.routers.heimdall.tls=true"
+      - "traefik.http.services.heimdall.loadbalancer.server.port=80" # need to be http port. or add some middleware redirects
+    # ports:
+      # - 80:80
+      # - 443:443
+
+networks:
+  frontend:
+    external: true
