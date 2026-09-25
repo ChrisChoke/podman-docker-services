@@ -1,0 +1,15 @@
+tcp:
+  routers:
+    pocketid-passthrough:
+      rule: "HostSNI(`auth.example.com`)" 
+      entryPoints:
+        - websecure
+      service: home-traefik-service
+      tls:
+        passthrough: true
+
+  services:
+    home-traefik-service:
+      loadBalancer:
+        servers:
+          - address: "192.1.1.10:443"

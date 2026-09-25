@@ -1,0 +1,19 @@
+name: netbird-client
+services:
+  netbird:
+    image: netbirdio/netbird:latest
+    container_name:
+    restart: unless-stopped
+    networks:
+      - proxy
+    cap_add:
+        - NET_ADMIN
+    environment:
+        #- NB_SETUP_KEY=$NB_SETUP_KEY
+        - NB_MANAGEMENT_URL=https://netbird.example.com
+    volumes:
+        - ./netbird-client:/var/lib/netbird
+
+networks:
+  proxy:
+    external: true

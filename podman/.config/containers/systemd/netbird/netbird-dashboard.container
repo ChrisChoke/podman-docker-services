@@ -1,0 +1,25 @@
+[Unit]
+Description=NetBird Dashboard
+After=netbird-server.service
+
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/.env
+
+[Container]
+Image=docker.io/netbirdio/dashboard:latest
+ContainerName=netbird-dashboard
+Network=frontend.network
+
+EnvironmentFile=./config/dashboard.env
+
+Label="traefik.enable=true"
+Label="traefik.http.routers.netbird-dashboard.rule=Host(`netbird.${BASEDOMAIN}`)"
+Label="traefik.http.routers.netbird-dashboard.entrypoints=websecure"
+Label="traefik.http.routers.netbird-dashboard.tls=true"
+Label="traefik.http.routers.netbird-dashboard.tls.certresolver=cloudflare"
+Label="traefik.http.routers.netbird-dashboard.priority=1"
+Label="traefik.http.routers.netbird-dashboard.service=netbird-dashboard"
+Label="traefik.http.services.netbird-dashboard.loadbalancer.server.port=80"
+
+[Install]
+WantedBy=default.target

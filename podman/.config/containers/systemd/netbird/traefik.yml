@@ -1,0 +1,41 @@
+#log:
+#  level: DEBUG
+#  format: common
+api:
+  dashboard: false
+  debug: false
+entryPoints:
+  # The name "web" matches
+  # the setting "FileDescriptorName=web" in the file http.socket
+  # Traefik inherits the socket from systemd (the parent process).
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  # The name "websecure" matches
+  # the setting "FileDescriptorName=websecure" in the file http.socket
+  # Traefik inherits the socket from systemd (the parent process).
+  websecure:
+    address: ":443"
+serversTransport:
+  insecureSkipVerify: false
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+  file:
+    filename: /config.yml
+    watch: true
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: email@email.de
+      storage: acme.json
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"

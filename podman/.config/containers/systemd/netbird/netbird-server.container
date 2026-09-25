@@ -1,0 +1,43 @@
+[Unit]
+Description=NetBird Server (Combined)
+After=network-online.target
+
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/.env
+
+[Container]
+Image=docker.io/netbirdio/netbird-server:latest
+ContainerName=netbird-server
+Network=frontend.network
+
+# Der STUN-Port MUSS nach außen offen sein (UDP)
+PublishPort=3478:3478/udp
+# My Pocket-ID IdP is reachable over the external ip address from this Host as well. So podman
+# will block this self directed traffic. The fix is to add a static host to the container.
+AddHost=auth.example.com:host-gateway
+
+Exec=--config /etc/netbird/config.yaml
+# Z-Flag für SELinux/Podman Rechte, genau wie bei deinem Pocket ID Setup
+Volume=./config/data:/var/lib/netbird:Z
+Volume=./config/config.yaml:/etc/netbird/config.yaml:Z
+
+Label="traefik.enable=true"
+# gRPC router (needs h2c backend for HTTP/2 cleartext)
+Label="traefik.http.routers.netbird-grpc.rule=Host(`netbird.${BASEDOMAIN}`) && (PathPrefix(`/signalexchange.SignalExchange/`) || PathPrefix(`/management.ManagementService/`))"
+Label="traefik.http.routers.netbird-grpc.entrypoints=websecure"
+Label="traefik.http.routers.netbird-grpc.tls=true"
+Label="traefik.http.routers.netbird-grpc.tls.certresolver=cloudflare"
+Label="traefik.http.routers.netbird-grpc.service=netbird-server-h2c"
+# Backend router (relay, WebSocket, API, OAuth2)
+Label="traefik.http.routers.netbird-backend.rule=Host(`netbird.${BASEDOMAIN}`) && (PathPrefix(`/relay`) || PathPrefix(`/ws-proxy/`) || PathPrefix(`/api`) || PathPrefix(`/oauth2`))"
+Label="traefik.http.routers.netbird-backend.entrypoints=websecure"
+Label="traefik.http.routers.netbird-backend.tls=true"
+Label="traefik.http.routers.netbird-backend.tls.certresolver=cloudflare"
+Label="traefik.http.routers.netbird-backend.service=netbird-server"
+# Services
+Label="traefik.http.services.netbird-server.loadbalancer.server.port=80"
+Label="traefik.http.services.netbird-server-h2c.loadbalancer.server.port=80"
+Label="traefik.http.services.netbird-server-h2c.loadbalancer.server.scheme=h2c"
+
+[Install]
+WantedBy=default.target
