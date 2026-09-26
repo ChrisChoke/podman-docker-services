@@ -100,3 +100,10 @@ Keep in mind. Currently this contains only the basedomain in the systemd context
 
 Create a .env file under ```~/.config/containers/systemd/.env``` from your podman user. Or rename the .env.example file.
 I try to list all variables in the example that you won't miss one.
+
+## Troubleshooting
+The following command is a good starting point to review the .container file. This will hinting you some syntax errors or something.
+
+```bash
+/usr/lib/systemd/user-generators/podman-user-generator -dryrun
+```
