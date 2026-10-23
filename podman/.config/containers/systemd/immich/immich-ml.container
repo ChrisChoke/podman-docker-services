@@ -1,0 +1,14 @@
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/immich/.env
+
+[Container]
+Image=ghcr.io/immich-app/immich-machine-learning:v3
+ContainerName=immich-machine-learning
+Network=immich_backend.network
+Volume=./data/ml:/cache:z
+
+Environment=TZ=Europe/Amsterdam
+
+[Install]
+# Start by default on boot
+WantedBy=default.target

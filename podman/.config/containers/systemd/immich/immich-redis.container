@@ -1,0 +1,10 @@
+[Container]
+Image=docker.io/valkey/valkey:9@sha256:70739f85ad2ee01a726a965584a0f94895f01b0c60b3cc8b0aeef11eaa6888cf
+ContainerName=redis
+Network=immich_backend.network
+
+Environment=TZ=Europe/Amsterdam
+
+[Install]
+# Start by default on boot
+WantedBy=default.target

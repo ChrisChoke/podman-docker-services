@@ -1,0 +1,24 @@
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/immich/.env
+
+[Container]
+Image=ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+ContainerName=database
+Network=immich_backend.network
+
+# Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
+#Volume=${DB_DATA_LOCATION}:/var/lib/postgresql/data:Z
+# We can not use a variable for Volumes from the .env file
+# Because systemd order when loading the .env file blocked it. thats sucks.
+Volume=./data/postgres:/var/lib/postgresql/data:Z
+ShmSize=128m
+
+Environment=TZ=Europe/Amsterdam
+Environment=POSTGRES_PASSWORD=${DB_PASSWORD}
+Environment=POSTGRES_USER=${DB_USERNAME}
+Environment=POSTGRES_DB=${DB_DATABASE_NAME}
+Environment=POSTGRES_INITDB_ARGS='--data-checksums'
+
+[Install]
+# Start by default on boot
+WantedBy=default.target

@@ -1,0 +1,31 @@
+[Unit]
+Description=Immich selfhosted photos
+After=immich-redis.service immich-db.service
+Requires=immich-redis.service immich-db.service
+
+[Service]
+EnvironmentFile=%h/.config/containers/systemd/.env
+EnvironmentFile=%h/.config/containers/systemd/immich/.env
+
+[Container]
+Image=ghcr.io/immich-app/immich-server:v3
+ContainerName=immich-server
+Network=frontend.network
+Network=immich_backend.network
+
+# Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
+Volume=./data/library:/data
+Volume=/etc/localtime:/etc/localtime:ro
+
+Environment=TZ=Europe/Amsterdam
+EnvironmentFile=./.env
+
+Label="traefik.enable=true"
+Label="traefik.http.routers.immich.entrypoints=websecure"
+Label="traefik.http.routers.immich.rule=Host(`immich.${BASEDOMAIN}`)"
+Label="traefik.http.routers.immich.tls=true"
+Label="traefik.http.services.immich.loadbalancer.server.port=2283"
+
+[Install]
+# Start by default on boot
+WantedBy=default.target
